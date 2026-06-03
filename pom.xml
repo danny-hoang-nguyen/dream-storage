@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.flownetworks</groupId>
-    <artifactId>teams-troublebot</artifactId>
+    <groupId>io.github.dannyhn</groupId>
+    <artifactId>telegram-claude-bot</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Teams Troubleshooting Bot</name>
+    <name>Telegram Claude Bot</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -19,7 +19,6 @@
 
     <properties>
         <java.version>17</java.version>
-        <kotlin.version>1.9.25</kotlin.version>
         <jackson-bom.version>2.18.1</jackson-bom.version>
     </properties>
 
@@ -30,13 +29,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Bot Framework Java SDK -->
-        <dependency>
-            <groupId>com.microsoft.bot</groupId>
-            <artifactId>bot-integration-spring</artifactId>
-            <version>4.14.3</version>
-        </dependency>
-
         <!-- Anthropic Java SDK -->
         <dependency>
             <groupId>com.anthropic</groupId>
@@ -44,7 +36,7 @@
             <version>0.8.0</version>
         </dependency>
 
-        <!-- Redis -->
+        <!-- Redis (conversation history) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -56,24 +48,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- Lombok (optional, giảm boilerplate) -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-      <dependency>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-stdlib</artifactId>
-        <version>1.9.25</version>
-      </dependency>
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- mockito-inline is not needed; use mockito-extensions config file for final class mocking -->
     </dependencies>
 
     <build>
@@ -81,14 +61,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

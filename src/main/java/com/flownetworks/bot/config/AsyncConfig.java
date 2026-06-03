@@ -11,7 +11,7 @@ public class AsyncConfig {
 
     /**
      * Executor riêng để xử lý message của bot bất đồng bộ, tránh block
-     * thread của Bot Framework adapter trong khi gọi Claude + Coda + Jira.
+     * thread chính trong khi gọi Claude API.
      */
     @Bean(name = "botTaskExecutor")
     public Executor botTaskExecutor() {

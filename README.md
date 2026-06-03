@@ -1,6 +1,6 @@
-# Backend Dev Assistant — Teams Bot
+# Telegram Claude Bot
 
-Chatbot cho backend developer trên MS Teams. Tự động search **Coda docs** và **Jira tickets** liên quan trước khi trả lời câu hỏi kỹ thuật.
+Telegram chatbot cá nhân sử dụng Anthropic Claude API. Hỗ trợ conversation history qua Redis.
 
 ## Yêu cầu
 
@@ -8,8 +8,7 @@ Chatbot cho backend developer trên MS Teams. Tự động search **Coda docs** 
 - Maven 3.8+
 - Docker (chạy Redis)
 - Anthropic API Key
-- Coda API Token
-- Jira API Token
+- Telegram Bot Token (tạo tại [@BotFather](https://t.me/BotFather))
 
 ## Chạy local
 
@@ -17,7 +16,7 @@ Chatbot cho backend developer trên MS Teams. Tự động search **Coda docs** 
 
 ```bash
 cp .env.example .env
-# Điền các API keys vào .env
+# Điền ANTHROPIC_API_KEY và TELEGRAM_BOT_TOKEN vào .env
 ```
 
 ### 2. Chạy Redis
@@ -31,50 +30,21 @@ docker run -d -p 6379:6379 --name redis-bot redis
 ```bash
 export $(cat .env | grep -v '^#' | xargs)
 mvn clean package -DskipTests
-java -jar target/teams-troublebot-1.0.0-SNAPSHOT.jar
+java -jar target/telegram-claude-bot-1.0.0-SNAPSHOT.jar
 ```
 
-Bot lắng nghe tại `http://localhost:3978/api/messages`
+Bot lắng nghe tại `http://localhost:8080/telegram/webhook`
 
-### 4. Test với Bot Framework Emulator
+### 4. Cấu hình Telegram Webhook
 
-Tải [Bot Framework Emulator](https://github.com/microsoft/BotFramework-Emulator/releases), kết nối tới `http://localhost:3978/api/messages` (để trống App ID/Password).
-
-## Cấu hình Coda
-
-```env
-CODA_API_TOKEN=xxx        # Bắt buộc
-CODA_DOC_ID=              # Optional: giới hạn search trong 1 doc cụ thể
-                          # Lấy từ URL: coda.io/d/DocName_dABCDEFG → ABCDEFG
+```bash
+curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-domain.com/telegram/webhook"
 ```
 
-## Cấu hình Jira
-
-```env
-JIRA_BASE_URL=https://yourcompany.atlassian.net
-JIRA_USERNAME=your-email@company.com
-JIRA_API_TOKEN=xxx        # Tạo tại atlassian.com/account/api-tokens
-JIRA_PROJECT_KEY=BACKEND  # Optional: giới hạn search trong project cụ thể
+Dùng [ngrok](https://ngrok.com) để test local:
+```bash
+ngrok http 8080
 ```
-
-## Luồng xử lý mỗi message
-
-Bot dùng **tool-calling** (agentic loop): Claude tự quyết định khi nào cần search.
-
-```
-User gửi message
-      │
-      └─► Claude API (system prompt + history + tools)
-                │
-                ├─ (nếu cần) gọi tool search_coda  ─► CodaService.search()
-                ├─ (nếu cần) gọi tool search_jira  ─► JiraService.search()
-                │      └─ kết quả tool quay lại Claude (lặp tối đa 10 vòng)
-                │
-                └─► Trả lời có link Coda + Jira key liên quan
-```
-
-Việc xử lý chạy bất đồng bộ trên thread pool riêng (`botTaskExecutor`) để
-không block thread của Bot Framework adapter.
 
 ## Lệnh đặc biệt
 
@@ -85,27 +55,23 @@ không block thread của Bot Framework adapter.
 ```
 src/main/java/com/flownetworks/bot/
 ├── BotApplication.java
-├── bot/TroubleshootingBot.java      # Nhận/gửi message Teams (async)
+├── controller/
+│   └── TelegramWebhookController.java   # Nhận webhook từ Telegram
 ├── service/
-│   ├── ClaudeService.java           # Gọi Claude + agentic tool loop
-│   ├── CodaService.java             # Search Coda API
-│   ├── JiraService.java             # Search Jira REST API v3 (/search/jql)
-│   └── ConversationService.java     # Lưu history Redis
+│   ├── ClaudeService.java               # Gọi Anthropic API
+│   ├── TelegramService.java             # Gửi message + Markdown→HTML
+│   └── ConversationService.java         # Lưu history trong Redis
 ├── config/
-│   ├── BotConfig.java               # Bot Framework adapter bean
-│   ├── TenantAwareBotAdapter.java   # Set tenant cho single-tenant Azure Bot
-│   ├── RestClientConfig.java        # RestTemplate dùng chung + timeout
-│   └── AsyncConfig.java             # Thread pool cho xử lý message
-└── dto/
-    ├── CodaDoc.java
-    ├── CodaSearchResponse.java
-    ├── CodaPageSearchResponse.java
-    ├── JiraIssue.java
-    └── JiraSearchResponse.java
+│   ├── TelegramProperties.java          # Config Telegram
+│   ├── RestClientConfig.java            # RestTemplate với timeout
+│   └── AsyncConfig.java                 # Thread pool xử lý bất đồng bộ
+└── dto/telegram/
+    ├── TelegramUpdate.java
+    ├── TelegramMessage.java
+    ├── TelegramUser.java
+    └── TelegramChat.java
 ```
 
 ## Bảo mật
 
-Tất cả secrets (API keys, tokens, app password) được đọc từ **environment
-variables** — không hardcode trong source. Xem `.env.example` để biết danh
-sách biến cần set. Đừng commit file `.env` (đã có trong `.gitignore`).
+Tất cả secrets được đọc từ **environment variables**. Xem `.env.example` để biết danh sách biến cần set. Không commit file `.env`.

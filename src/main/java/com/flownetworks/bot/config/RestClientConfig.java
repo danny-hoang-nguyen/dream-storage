@@ -11,8 +11,8 @@ import java.time.Duration;
 public class RestClientConfig {
 
     /**
-     * RestTemplate dùng chung cho các external API (Coda, Jira) với timeout
-     * để tránh request treo vô hạn khi service bên ngoài không phản hồi.
+     * RestTemplate dùng chung cho Telegram API với timeout
+     * để tránh request treo vô hạn khi Telegram không phản hồi.
      */
     @Bean
     public RestTemplate externalApiRestTemplate(RestTemplateBuilder builder) {
