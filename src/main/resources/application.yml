@@ -1,0 +1,44 @@
+server:
+  port: 3978
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY}
+  model: ${ANTHROPIC_MODEL:claude-sonnet-4-6}
+
+microsoft:
+  app-id: ${MICROSOFT_APP_ID:}
+  app-password: ${MICROSOFT_APP_PASSWORD:}
+
+# Coda
+coda:
+  api-token: ${CODA_API_TOKEN}
+  # doc-id: để trống = search toàn workspace
+  # điền doc ID cụ thể để chỉ search trong 1 doc (lấy từ URL coda.io/d/DocName_dXXXXXX)
+  doc-id: ${CODA_DOC_ID:}
+
+# Jira / Atlassian
+jira:
+  base-url: ${JIRA_BASE_URL}
+  username: ${JIRA_USERNAME}
+  api-token: ${JIRA_API_TOKEN}
+  # project-key: để trống = search toàn bộ, điền để giới hạn VD: BACKEND
+  project-key: ${JIRA_PROJECT_KEY:}
+
+telegram:
+  bot-token: ${TELEGRAM_BOT_TOKEN:}
+  secret-token: ${TELEGRAM_SECRET_TOKEN:}
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+logging:
+  level:
+    com.flownetworks: DEBUG
+    com.microsoft.bot: INFO
+    com.microsoft.aad: INFO
+    com.microsoft.bot.connector.authentication: INFO
+    okhttp3: INFO

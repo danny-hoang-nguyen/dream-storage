@@ -1,0 +1,34 @@
+# Environment / secrets
+.env
+*.env
+!.env.example
+
+# Secrets - never commit
+src/main/resources/application.properties
+
+# Maven build
+target/
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# OS / misc
+*.bak
+*.tmp
