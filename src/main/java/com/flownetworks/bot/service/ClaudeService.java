@@ -3,12 +3,15 @@ package com.flownetworks.bot.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.util.StreamUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,25 +26,19 @@ public class ClaudeService {
     private final String apiKey;
     private final String model;
     private final int maxTokens;
-
-    private static final String SYSTEM_PROMPT =
-            "Bạn là Dream Storage — nhật ký giấc mơ cá nhân của người dùng. " +
-            "Khi người dùng kể một giấc mơ, hãy: " +
-            "1. Xác nhận đã ghi lại ngắn gọn (1 câu). " +
-            "2. Đặt 1-2 câu hỏi nhẹ nhàng để gợi nhớ thêm chi tiết — ví dụ về cảm xúc, màu sắc, nhân vật, không gian, hoặc kết thúc của giấc mơ. " +
-            "Không phân tích tâm lý, không diễn giải ý nghĩa trừ khi người dùng hỏi. " +
-            "Giọng điệu ấm áp, tò mò, như một người bạn lắng nghe. " +
-            "Trả lời bằng ngôn ngữ mà người dùng đang dùng.";
+    private final String systemPrompt;
 
     public ClaudeService(
             RestTemplate externalApiRestTemplate,
             @Value("${anthropic.api-key}") String apiKey,
             @Value("${anthropic.model:claude-sonnet-4-6}") String model,
-            @Value("${anthropic.max-tokens:2048}") int maxTokens) {
+            @Value("${anthropic.max-tokens:2048}") int maxTokens,
+            @Value("${claude.system-prompt-path:classpath:system-prompt.txt}") Resource systemPromptResource) throws Exception {
         this.restTemplate = externalApiRestTemplate;
         this.apiKey = apiKey;
         this.model = model;
         this.maxTokens = maxTokens;
+        this.systemPrompt = StreamUtils.copyToString(systemPromptResource.getInputStream(), StandardCharsets.UTF_8).strip();
     }
 
     public String chat(List<Map<String, String>> history, String userMessage) {
@@ -59,7 +56,7 @@ public class ClaudeService {
             Map<String, Object> body = Map.of(
                     "model", model,
                     "max_tokens", maxTokens,
-                    "system", SYSTEM_PROMPT,
+                    "system", systemPrompt,
                     "messages", messages
             );
 
@@ -69,6 +66,10 @@ public class ClaudeService {
             Map<String, Object> response = restTemplate.postForObject(API_URL, request, Map.class);
 
             log.info("Claude done in {}ms", System.currentTimeMillis() - t0);
+
+            if (response == null) {
+                return "Không có response từ Claude. Vui lòng thử lại.";
+            }
 
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");

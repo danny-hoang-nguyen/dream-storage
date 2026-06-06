@@ -50,6 +50,19 @@ ngrok http 8080
 
 - `/clear` — Reset conversation history
 
+## Tuỳ chỉnh System Prompt
+
+System prompt (persona/behavior của bot) được tách ra file `src/main/resources/system-prompt.txt`. Sửa file rồi rebuild là xong.
+
+Khi đã build thành JAR, file prompt nằm **bên trong JAR**. Muốn đổi prompt mà không cần rebuild, override bằng env var trỏ tới file ngoài:
+
+```bash
+export CLAUDE_SYSTEM_PROMPT_PATH=file:./system-prompt.txt
+java -jar target/telegram-claude-bot-1.0.0-SNAPSHOT.jar
+```
+
+Sửa `system-prompt.txt` cạnh JAR rồi restart → apply ngay. Hỗ trợ path tuyệt đối (`file:/etc/bot/system-prompt.txt`) hoặc classpath (`classpath:system-prompt.txt`, mặc định).
+
 ## Cấu trúc project
 
 ```
@@ -58,7 +71,7 @@ src/main/java/com/flownetworks/bot/
 ├── controller/
 │   └── TelegramWebhookController.java   # Nhận webhook từ Telegram
 ├── service/
-│   ├── ClaudeService.java               # Gọi Anthropic API
+│   ├── ClaudeService.java               # Gọi Anthropic API (system prompt nạp từ file)
 │   ├── TelegramService.java             # Gửi message + Markdown→HTML
 │   └── ConversationService.java         # Lưu history trong Redis
 ├── config/
@@ -70,6 +83,11 @@ src/main/java/com/flownetworks/bot/
     ├── TelegramMessage.java
     ├── TelegramUser.java
     └── TelegramChat.java
+
+src/main/resources/
+├── application.yml                      # Spring config
+├── application.properties               # Microsoft Bot Framework config
+└── system-prompt.txt                    # System prompt cho Claude
 ```
 
 ## Bảo mật

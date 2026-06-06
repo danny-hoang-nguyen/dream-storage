@@ -1,10 +1,13 @@
 server:
-  port: 8080
+  port: 8888
 
 anthropic:
   api-key: ${ANTHROPIC_API_KEY}
   model: ${ANTHROPIC_MODEL:claude-sonnet-4-6}
   max-tokens: ${ANTHROPIC_MAX_TOKENS:2048}
+
+claude:
+  system-prompt-path: ${CLAUDE_SYSTEM_PROMPT_PATH:classpath:system-prompt.txt}
 
 telegram:
   bot-token: ${TELEGRAM_BOT_TOKEN}
