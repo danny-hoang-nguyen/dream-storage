@@ -30,7 +30,7 @@ docker run -d -p 6379:6379 --name redis-bot redis
 ```bash
 export $(cat .env | grep -v '^#' | xargs)
 mvn clean package -DskipTests
-java -jar target/telegram-claude-bot-1.0.0-SNAPSHOT.jar
+java -jar target/chatbot-telegram-1.0.0-SNAPSHOT.jar
 ```
 
 Bot lắng nghe tại `http://localhost:8080/telegram/webhook`
@@ -58,7 +58,7 @@ Khi đã build thành JAR, file prompt nằm **bên trong JAR**. Muốn đổi p
 
 ```bash
 export CLAUDE_SYSTEM_PROMPT_PATH=file:./system-prompt.txt
-java -jar target/telegram-claude-bot-1.0.0-SNAPSHOT.jar
+java -jar target/chatbot-telegram-1.0.0-SNAPSHOT.jar
 ```
 
 Sửa `system-prompt.txt` cạnh JAR rồi restart → apply ngay. Hỗ trợ path tuyệt đối (`file:/etc/bot/system-prompt.txt`) hoặc classpath (`classpath:system-prompt.txt`, mặc định).
@@ -66,7 +66,7 @@ Sửa `system-prompt.txt` cạnh JAR rồi restart → apply ngay. Hỗ trợ pa
 ## Cấu trúc project
 
 ```
-src/main/java/com/flownetworks/bot/
+src/main/java/danny/project/chatbot/telegram/
 ├── BotApplication.java
 ├── controller/
 │   └── TelegramWebhookController.java   # Nhận webhook từ Telegram

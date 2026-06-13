@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.dannyhn</groupId>
-    <artifactId>telegram-claude-bot</artifactId>
+    <groupId>danny.project</groupId>
+    <artifactId>chatbot-telegram</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Telegram Claude Bot</name>
+    <name>Chatbot Telegram</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

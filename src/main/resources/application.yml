@@ -26,4 +26,4 @@ spring:
 
 logging:
   level:
-    com.flownetworks: INFO
+    danny.project.chatbot.telegram: INFO
