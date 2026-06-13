@@ -109,7 +109,7 @@ src/main/resources/
 
 - `start_only.sh` — Khởi động bot từ JAR đã build (đọc `.env`, ghi log `/tmp/bot.log`, PID `/tmp/bot.pid`).
 - `stop_only.sh` — Dừng bot theo PID file.
-- `deploy.sh` — Build local + SSH lên remote (`root@REDACTED:/root/telegram-bot`), stop → swap JAR → start.
+- `deploy.sh` — Build local + SSH lên remote, stop → swap JAR → start. Cấu hình host trong `.deploy.env` (copy từ `.deploy.env.example`); biến `DEPLOY_USER`/`DEPLOY_HOST`/`DEPLOY_DIR` cũng có thể export thẳng từ shell.
 
 ## Bảo mật
 
