@@ -3,6 +3,9 @@ package com.flownetworks.bot.controller;
 import com.flownetworks.bot.config.TelegramProperties;
 import com.flownetworks.bot.dto.telegram.TelegramMessage;
 import com.flownetworks.bot.dto.telegram.TelegramUpdate;
+import com.flownetworks.bot.reminder.Reminder;
+import com.flownetworks.bot.reminder.ReminderParser;
+import com.flownetworks.bot.reminder.ReminderStore;
 import com.flownetworks.bot.service.ClaudeService;
 import com.flownetworks.bot.service.ConversationService;
 import com.flownetworks.bot.service.TelegramService;
@@ -18,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -29,22 +35,30 @@ public class TelegramWebhookController {
 
     private static final Logger log = LoggerFactory.getLogger(TelegramWebhookController.class);
     private static final String TELEGRAM_CONVERSATION_PREFIX = "telegram:";
+    private static final ZoneId VN_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    private static final DateTimeFormatter DISPLAY_FMT = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
     private final TelegramService telegramService;
     private final TelegramProperties telegramProperties;
     private final ClaudeService claudeService;
     private final ConversationService conversationService;
+    private final ReminderParser reminderParser;
+    private final ReminderStore reminderStore;
     private final Executor botTaskExecutor;
 
     public TelegramWebhookController(TelegramService telegramService,
                                       TelegramProperties telegramProperties,
                                       ClaudeService claudeService,
                                       ConversationService conversationService,
+                                      ReminderParser reminderParser,
+                                      ReminderStore reminderStore,
                                       @Qualifier("botTaskExecutor") Executor botTaskExecutor) {
         this.telegramService = telegramService;
         this.telegramProperties = telegramProperties;
         this.claudeService = claudeService;
         this.conversationService = conversationService;
+        this.reminderParser = reminderParser;
+        this.reminderStore = reminderStore;
         this.botTaskExecutor = botTaskExecutor;
     }
 
@@ -96,10 +110,27 @@ public class TelegramWebhookController {
             return;
         }
 
+        if ("/reminders".equalsIgnoreCase(text)) {
+            sendReminderList(chatId);
+            return;
+        }
+
         telegramService.sendTypingAction(chatId);
 
-        List<Map<String, String>> history = conversationService.getHistory(conversationId);
         try {
+            var parsed = reminderParser.parse(text);
+            if (parsed.isPresent()) {
+                var pr = parsed.get();
+                reminderStore.add(chatId, pr.task(), pr.remindAtEpochMs());
+                String when = DISPLAY_FMT.format(Instant.ofEpochMilli(pr.remindAtEpochMs()).atZone(VN_ZONE));
+                String reply = pr.reply().isBlank()
+                        ? "Đã đặt nhắc nhở: " + pr.task() + " lúc " + when + "."
+                        : pr.reply() + " (" + when + ")";
+                telegramService.sendMessage(chatId, reply);
+                return;
+            }
+
+            List<Map<String, String>> history = conversationService.getHistory(conversationId);
             String reply = claudeService.chat(history, text);
             conversationService.appendMessages(conversationId, List.of(
                 Map.entry("user", text),
@@ -110,5 +141,19 @@ public class TelegramWebhookController {
             log.error("Telegram processing failed for chat {}: {}", chatId, e.getMessage(), e);
             telegramService.sendMessage(chatId, "Xin lỗi, bot đang gặp sự cố. Vui lòng thử lại sau.");
         }
+    }
+
+    private void sendReminderList(long chatId) {
+        List<Reminder> pending = reminderStore.listPendingForChat(chatId);
+        if (pending.isEmpty()) {
+            telegramService.sendMessage(chatId, "Bạn chưa có nhắc nhở nào đang chờ.");
+            return;
+        }
+        StringBuilder sb = new StringBuilder("📋 Nhắc nhở đang chờ:\n");
+        for (Reminder r : pending) {
+            String when = DISPLAY_FMT.format(Instant.ofEpochMilli(r.remindAtEpochMs).atZone(VN_ZONE));
+            sb.append("• ").append(when).append(" — ").append(r.task).append("\n");
+        }
+        telegramService.sendMessage(chatId, sb.toString().trim());
     }
 }

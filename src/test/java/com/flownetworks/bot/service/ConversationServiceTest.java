@@ -152,7 +152,7 @@ class ConversationServiceTest {
 
         conversationService.appendMessages("conv-1", List.of(Map.entry("user", "hello")));
 
-        verify(valueOps).set(eq("bot:conversation:conv-1"), anyString(), eq(Duration.ofHours(2)));
+        verify(valueOps).set(eq("bot:conversation:conv-1"), anyString(), eq(Duration.ofHours(24)));
     }
 
     @Test

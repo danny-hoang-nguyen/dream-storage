@@ -22,7 +22,7 @@ public class ConversationService {
 
     private static final Logger log = LoggerFactory.getLogger(ConversationService.class);
     private static final String KEY_PREFIX = "bot:conversation:";
-    private static final Duration TTL = Duration.ofHours(2);
+    private static final Duration TTL = Duration.ofHours(24);
     private static final int MAX_TURNS = 20;
     private static final int MAX_RETRY_ATTEMPTS = 5;
 
