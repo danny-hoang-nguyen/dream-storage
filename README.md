@@ -110,6 +110,8 @@ src/main/resources/
 - `start_only.sh` — Khởi động bot từ JAR đã build (đọc `.env`, ghi log `/tmp/bot.log`, PID `/tmp/bot.pid`).
 - `stop_only.sh` — Dừng bot theo PID file.
 - `deploy.sh` — Build local + SSH lên remote, stop → swap JAR → start. Cấu hình host trong `.deploy.env` (copy từ `.deploy.env.example`); biến `DEPLOY_USER`/`DEPLOY_HOST`/`DEPLOY_DIR` cũng có thể export thẳng từ shell.
+- `update-my-ip.sh` — Refresh SSH allow-rule trên DigitalOcean firewall khi IP nhà đổi. Đọc `FIREWALL_ID` từ `.deploy.env`; add rule mới trước, xóa rule cũ sau (không bao giờ có khoảng thời gian firewall không có SSH).
+- `backup-reminders.sh` — Backup `reminders.json` sang `backups/reminders-YYYYMMDD.json`, giữ 14 ngày, xoá cái cũ hơn. Trên server cài qua cron `0 19 * * *` (02:00 +07 mỗi đêm), log vào `/var/log/reminders-backup.log`. Restore: copy file từ `backups/` về `reminders.json` rồi restart bot.
 
 ## Bảo mật
 
